@@ -15,9 +15,9 @@ app.get('/',(req,res)=>{
     res.render('home',{rand:random_value});
 })
 
-app.get('/arrcheck',(req,res)=>{
-    let vals=[1,2,3,4,5];
-    res.render('arrs',{arr:vals});
+app.get('/loop',(req,res)=>{
+    const vals=[1,2,3,4,5];
+    res.render('loop',{arr:vals});
 })
 
 
