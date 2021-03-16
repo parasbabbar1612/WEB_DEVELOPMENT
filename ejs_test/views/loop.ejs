@@ -2,13 +2,19 @@
 <html>
     <head>
         <title>Looping</title>
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <script src="/js/jquery.js"></script>
+        <script src="/js/bootstrap.min.js"></script>
     </head>
     <body>
-        <h1>EJS LOOPING TEST</h1>
-    <ul>
+        <div class="container">
+            <%- include('partials/navb') %> 
+            <h1>EJS LOOPING TEST</h1>
+            <ul>
         <% for(let element of arr) { %>
         <li><%= element %> </li>
         <% } %>
     </ul> 
+</div>
     </body>
 </html>
