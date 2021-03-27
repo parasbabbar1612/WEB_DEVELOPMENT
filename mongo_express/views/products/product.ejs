@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Product</title>
+    </head>
+    <body>
+        <h1><%= product.name %></h1>
+        <ul>
+            <li><%= product.price %> </li>
+            <li><a href="/index?category=<%=product.category%>"><%=product.category%></a></li>
+        </ul>
+        <a href="/index">All Products</a>
+        <a href="/index/<%=product._id%>/edit">Edit Product</a>
+        <form action="/index/<%=product._id%>?_method=DELETE" method="POST">
+        <button>DELETE</button>
+        </form>
+    </body>
+</html>

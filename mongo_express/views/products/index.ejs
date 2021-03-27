@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>All Products</title>
+    </head>
+    <body>
+        <h1><%=category%> Available</h1>
+        <ul>
+            <% for(let product of result) { %>
+            <li><a href="index/<%= product.id %> "><%= product.name %></li></a>
+            <% }  %> 
+        </ul>
+        <a href="index/new">New Product</a>
+        <% if(category!=='All'){ %>
+            <a href="/index">All Products</a>
+            <% } %> 
+    </body>
+</html>
