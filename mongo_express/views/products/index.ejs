@@ -1,18 +1,24 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>All Products</title>
-    </head>
-    <body>
-        <h1><%=category%> Available</h1>
-        <ul>
-            <% for(let product of result) { %>
-            <li><a href="index/<%= product.id %> "><%= product.name %></li></a>
-            <% }  %> 
-        </ul>
-        <a href="index/new">New Product</a>
-        <% if(category!=='All'){ %>
-            <a href="/index">All Products</a>
-            <% } %> 
-    </body>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Products</title>
+</head>
+
+<body>
+    <h1><%= category%> Products!</h1>
+    <ul>
+        <% for(let product of products) { %>
+        <li><a href="/products/<%=product._id%>"><%= product.name %></a> </li>
+        <% }%>
+    </ul>
+    <a href="/products/new">New Product</a>
+    <%if(category !== 'All') {%>
+    <a href="/products">All Products</a>
+    <% } %>
+
+</body>
+
 </html>

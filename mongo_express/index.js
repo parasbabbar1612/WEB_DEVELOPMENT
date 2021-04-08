@@ -1,79 +1,131 @@
-const express=require('express');
-const app=express();
-const path=require('path')
-const Product=require('./models/products')
-const method_override=require('method-override');
+const express = require('express');
+const app = express();
+const path = require('path');
+const mongoose = require('mongoose');
+const methodOverride = require('method-override')
 
-app.set('views',path.join(__dirname,'views'));
-app.set('view engine','ejs');
+const Product = require('./models/product');
+const Farm = require('./models/farm')
+const categories = ['fruit', 'vegetable', 'dairy'];
 
-app.use(express.urlencoded({extended:true}));
-app.use(method_override('_method'));
 
-app.listen(3000,()=>{
-    console.log("APP STARTED");
+mongoose.connect('mongodb://localhost:27017/farmStandTake2', { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => {
+        console.log("MONGO CONNECTION OPEN!!!")
+    })
+    .catch(err => {
+        console.log("OH NO MONGO CONNECTION ERROR!!!!")
+        console.log(err)
+    })
+
+
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'))
+
+// FARM ROUTES
+
+app.get('/farms', async (req, res) => {
+    const farms = await Farm.find({});
+    res.render('farms/index', { farms })
+})
+app.get('/farms/new', (req, res) => {
+    res.render('farms/new')
+})
+app.get('/farms/:id', async (req, res) => {
+    const farm = await Farm.findById(req.params.id).populate('products');
+    res.render('farms/show', { farm })
 })
 
-const mongoose=require('mongoose');
-mongoose.connect('mongodb://localhost:27017/farmmarket', {useNewUrlParser: true})
-.then(()=>{
-    console.log('Connected to MongoDB')
-})
-.catch((err)=>{
-    console.log("Error: ",err);
+app.delete('/farms/:id', async (req, res) => {
+    const farm = await Farm.findByIdAndDelete(req.params.id);
+
+    res.redirect('/farms');
 })
 
-const categories=['vegetable','fruit','dairy']
 
-app.get('/index',async (req,res)=>{
-    const {category}=req.query;
-    if(category){
-        const result=await Product.find({category:category});
-        res.render('products/index',{result,category});
+
+
+app.post('/farms', async (req, res) => {
+    const farm = new Farm(req.body);
+    await farm.save();
+    res.redirect('/farms')
+})
+
+app.get('/farms/:id/products/new', async (req, res) => {
+    const { id } = req.params;
+    const farm = await Farm.findById(id);
+    res.render('products/new', { categories, farm })
+})
+
+app.post('/farms/:id/products', async (req, res) => {
+    const { id } = req.params;
+    const farm = await Farm.findById(id);
+    const { name, price, category } = req.body;
+    const product = new Product({ name, price, category });
+    farm.products.push(product);
+    product.farm = farm;
+    await farm.save();
+    await product.save();
+    res.redirect(`/farms/${id}`)
+})
+
+
+
+// PRODUCT ROUTES
+
+app.get('/products', async (req, res) => {
+    const { category } = req.query;
+    if (category) {
+        const products = await Product.find({ category })
+        res.render('products/index', { products, category })
+    } else {
+        const products = await Product.find({})
+        res.render('products/index', { products, category: 'All' })
     }
-    else{
-        const result=await Product.find({});
-        res.render('products/index',{result,category:'All'});
-    }
-    res.render('products/index',{result});
 })
 
-app.get('/index/new',(req,res)=>{
-    res.render('products/new',{categories});
+app.get('/products/new', (req, res) => {
+    res.render('products/new', { categories })
 })
 
-app.get('/index/new',(req,res)=>{
-    res.render('products/new');
+app.post('/products', async (req, res) => {
+    const newProduct = new Product(req.body);
+    await newProduct.save();
+    res.redirect(`/products/${newProduct._id}`)
 })
 
-app.get('/index/:id',async (req,res)=>{
-    const {id}=req.params;
-    const product=await Product.findById(id);
-    res.render('products/product',{product});
+app.get('/products/:id', async (req, res) => {
+    const { id } = req.params;
+    const product = await Product.findById(id).populate('farm', 'name');
+    res.render('products/show', { product })
 })
 
-app.put('/index/:id',async (req,res)=>{
-    const {id}=req.params;
-    const product=await Product.findByIdAndUpdate(id,req.body);
-    res.redirect(`/index/${product._id}`);
+app.get('/products/:id/edit', async (req, res) => {
+    const { id } = req.params;
+    const product = await Product.findById(id);
+    res.render('products/edit', { product, categories })
 })
 
-app.delete('/index/:id',async (req,res)=>{
-    const {id}=req.params;
-    await Product.findByIdAndDelete(id);
-    res.redirect('/index')}
-)
-
-app.get('/index/:id/edit',async (req,res)=>{
-    const {id}=req.params;
-    //console.log(id);
-    const product=await Product.findById(id);
-    res.render('products/edit',{product,categories});
+app.put('/products/:id', async (req, res) => {
+    const { id } = req.params;
+    const product = await Product.findByIdAndUpdate(id, req.body, { runValidators: true, new: true });
+    res.redirect(`/products/${product._id}`);
 })
 
-app.post('/index',async (req,res)=>{
-    const new_product=new Product(req.body); 
-    await new_product.save();
-    console.log(new_product);
-    res.redirect(`index/${new_product._id}`);
+app.delete('/products/:id', async (req, res) => {
+    const { id } = req.params;
+    const deletedProduct = await Product.findByIdAndDelete(id);
+    res.redirect('/products');
 })
+
+
+
+app.listen(3000, () => {
+    console.log("APP IS LISTENING ON PORT 3000!")
+})
+
+
+
